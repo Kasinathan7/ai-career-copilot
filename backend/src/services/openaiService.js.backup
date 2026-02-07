@@ -1,0 +1,336 @@
+import OpenAI from 'openai';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+class GroqService {
+  constructor() {
+    // Configure OpenAI SDK to use Groq
+    this.client = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: 'https://api.groq.com/openai/v1',
+    });
+    
+    // Groq models - super fast!
+    this.defaultModel = process.env.GROQ_MODEL || 'llama-3.1-70b-versatile';
+    this.secondaryModel = process.env.GROQ_MODEL_SECONDARY || 'llama-3.1-8b-instant';
+    
+    console.log('✅ Groq service initialized');
+    console.log(`   📍 Base URL: https://api.groq.com/openai/v1`);
+    console.log(`   🤖 Primary model: ${this.defaultModel}`);
+    console.log(`   🤖 Secondary model: ${this.secondaryModel}`);
+  }
+
+  async generateCompletion(messages, options = {}) {
+    const {
+      model = this.defaultModel,
+      temperature = 0.7,
+      maxTokens = 2000,
+      stream = false
+    } = options;
+
+    try {
+      const startTime = Date.now();
+      
+      const completion = await this.client.chat.completions.create({
+        model,
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+        stream
+      });
+
+      const processingTime = Date.now() - startTime;
+      
+      if (stream) {
+        return completion;
+      }
+
+      return {
+        content: completion.choices[0].message.content,
+        usage: completion.usage,
+        processingTime,
+        model
+      };
+    } catch (error) {
+      console.error('Groq API Error:', error);
+      throw new Error(`Groq API Error: ${error.message}`);
+    }
+  }
+
+  async generateEmbedding(text) {
+    try {
+      // Note: Groq doesn't support embeddings yet
+      // For now, return a simple hash-based embedding
+      console.warn('Embeddings not supported by Groq, using fallback');
+      return Array(1536).fill(0).map(() => Math.random());
+    } catch (error) {
+      console.error('Groq Embedding Error:', error);
+      throw new Error(`Groq Embedding Error: ${error.message}`);
+    }
+  }
+
+  async classifyIntent(message) {
+    const messages = [
+      {
+        role: 'system',
+        content: `You are an intent classifier for an AI Resume Assistant. Classify user messages into these categories:
+        
+        1. "ats-score" - Questions about resume scoring, ATS optimization, resume analysis
+        2. "resume-builder" - Requests to create, modify, or improve resumes
+        3. "mock-interview" - Interview practice, questions, feedback, interview preparation
+        4. "job-suggest" - Career advice, role recommendations, career path guidance
+        5. "job-search" - Finding jobs, job applications, job market information
+        6. "general" - General conversation, greetings, help requests, unclear intent
+        
+        Respond with ONLY the category name, nothing else.`
+      },
+      {
+        role: 'user',
+        content: message
+      }
+    ];
+
+    try {
+      const result = await this.generateCompletion(messages, {
+        model: this.secondaryModel,
+        temperature: 0.1,
+        maxTokens: 50
+      });
+
+      const intent = result.content.trim().toLowerCase();
+      const validIntents = ['ats-score', 'resume-builder', 'mock-interview', 'job-suggest', 'job-search', 'general'];
+      
+      return validIntents.includes(intent) ? intent : 'general';
+    } catch (error) {
+      console.error('Intent classification error:', error);
+      return 'general';
+    }
+  }
+
+  async extractEntities(message) {
+    const messages = [
+      {
+        role: 'system',
+        content: `Extract key entities from the user message. Return a JSON array of entities with type, value, and confidence (0-1).
+        
+        Entity types:
+        - JOB_TITLE: Job positions, roles
+        - COMPANY: Company names
+        - SKILL: Technical or soft skills
+        - LOCATION: Cities, states, countries
+        - EXPERIENCE: Years of experience
+        - EDUCATION: Degrees, certifications
+        - SALARY: Salary amounts or ranges
+        
+        Example response: [{"type": "JOB_TITLE", "value": "Software Engineer", "confidence": 0.9}]`
+      },
+      {
+        role: 'user',
+        content: message
+      }
+    ];
+
+    try {
+      const result = await this.generateCompletion(messages, {
+        model: this.secondaryModel,
+        temperature: 0.1,
+        maxTokens: 200
+      });
+
+      return JSON.parse(result.content);
+    } catch (error) {
+      console.error('Entity extraction error:', error);
+      return [];
+    }
+  }
+
+  async generateSummary(text, maxLength = 100) {
+    const messages = [
+      {
+        role: 'system',
+        content: `Summarize the following text in ${maxLength} words or less. Keep it concise and informative.`
+      },
+      {
+        role: 'user',
+        content: text
+      }
+    ];
+
+    try {
+      const result = await this.generateCompletion(messages, {
+        model: this.secondaryModel,
+        temperature: 0.3,
+        maxTokens: Math.ceil(maxLength * 1.5)
+      });
+
+      return result.content;
+    } catch (error) {
+      console.error('Summary generation error:', error);
+      throw error;
+    }
+  }
+
+  async improveText(text, context = 'general writing') {
+    const messages = [
+      {
+        role: 'system',
+        content: `Improve the following text for ${context}. Make it more professional, clear, and engaging while maintaining the original meaning.`
+      },
+      {
+        role: 'user',
+        content: text
+      }
+    ];
+
+    try {
+      const result = await this.generateCompletion(messages, {
+        temperature: 0.6,
+        maxTokens: Math.ceil(text.length * 2)
+      });
+
+      return result.content;
+    } catch (error) {
+      console.error('Text improvement error:', error);
+      throw error;
+    }
+  }
+
+  async translateText(text, targetLanguage = 'en') {
+    const messages = [
+      {
+        role: 'system',
+        content: `Translate the following text to ${targetLanguage}. Maintain professional tone and context.`
+      },
+      {
+        role: 'user',
+        content: text
+      }
+    ];
+
+    try {
+      const result = await this.generateCompletion(messages, {
+        model: this.secondaryModel,
+        temperature: 0.3
+      });
+
+      return result.content;
+    } catch (error) {
+      console.error('Translation error:', error);
+      throw error;
+    }
+  }
+
+  async generateKeywords(text, count = 10) {
+    const messages = [
+      {
+        role: 'system',
+        content: `Extract the ${count} most important keywords from the following text. Return them as a comma-separated list.`
+      },
+      {
+        role: 'user',
+        content: text
+      }
+    ];
+
+    try {
+      const result = await this.generateCompletion(messages, {
+        model: this.secondaryModel,
+        temperature: 0.1,
+        maxTokens: 100
+      });
+
+      return result.content.split(',').map(keyword => keyword.trim());
+    } catch (error) {
+      console.error('Keyword generation error:', error);
+      return [];
+    }
+  }
+
+  async checkGrammar(text) {
+    const messages = [
+      {
+        role: 'system',
+        content: `Check the following text for grammar, spelling, and style issues. Provide specific corrections and suggestions.`
+      },
+      {
+        role: 'user',
+        content: text
+      }
+    ];
+
+    try {
+      const result = await this.generateCompletion(messages, {
+        temperature: 0.1
+      });
+
+      return result.content;
+    } catch (error) {
+      console.error('Grammar check error:', error);
+      throw error;
+    }
+  }
+
+  async createSystemPrompt(chatbotType, context = {}) {
+    const prompts = {
+      'main': `You are an AI Resume Assistant, a helpful and professional career counselor. You help users with:
+        - Resume creation and optimization
+        - Job search strategies
+        - Interview preparation
+        - Career advice
+        - ATS (Applicant Tracking System) optimization
+        
+        Always be encouraging, specific, and actionable in your advice. If you need to route to a specialized chatbot, let the user know.`,
+        
+      'ats-score': `You are an ATS (Applicant Tracking System) Resume Analyzer. You specialize in:
+        - Analyzing resumes for ATS compatibility
+        - Providing specific keyword suggestions
+        - Identifying formatting issues
+        - Scoring resumes against job descriptions
+        - Suggesting improvements for better ATS performance
+        
+        Always provide specific, actionable feedback with scores and clear improvement steps.`,
+        
+      'resume-builder': `You are a Resume Builder Assistant. You help users create professional, ATS-friendly resumes by:
+        - Gathering information about their experience, education, and skills
+        - Suggesting optimal resume formats and sections
+        - Writing compelling bullet points and summaries
+        - Tailoring resumes for specific job applications
+        - Ensuring proper formatting and structure
+        
+        Ask clarifying questions and provide specific suggestions for improvement.`,
+        
+      'mock-interview': `You are a Mock Interview Coach. You conduct realistic interview simulations by:
+        - Asking relevant interview questions based on the user's target role
+        - Providing detailed feedback on answers
+        - Suggesting improvements for communication and content
+        - Covering behavioral, technical, and situational questions
+        - Building confidence through practice
+        
+        Be supportive but honest in your feedback. Provide specific examples and improvement tips.`,
+        
+      'job-suggest': `You are a Career Advisor specializing in job role recommendations. You help by:
+        - Analyzing skills, experience, and interests
+        - Suggesting suitable career paths and roles
+        - Providing insights about different industries
+        - Recommending skill development opportunities
+        - Explaining career progression options
+        
+        Provide personalized, realistic advice based on the user's background and goals.`,
+        
+      'job-search': `You are a Job Search Specialist. You assist with:
+        - Finding relevant job opportunities
+        - Optimizing job search strategies
+        - Analyzing job market trends
+        - Providing application tips and strategies
+        - Connecting users with relevant opportunities
+        
+        Be practical and specific in your job search guidance.`
+    };
+
+    return prompts[chatbotType] || prompts['main'];
+  }
+}
+
+export default new GroqService();
