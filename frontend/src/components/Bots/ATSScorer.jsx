@@ -1,27 +1,20 @@
 import React, { useState, useCallback } from 'react';
 import api from '../../services/api';
 import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Chip,
-  LinearProgress,
-  Card,
-  CardContent,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Alert,
-  Divider,
-  Grid,
-  CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  TextField
-} from '@mui/material';
+  CloudUpload,
+  Assignment,
+  CheckCircle,
+  Warning,
+  Error as ErrorIcon,
+  TrendingUp,
+  TrendingDown,
+  KeyboardArrowDown,
+  Search,
+  FilePresent,
+  Analytics,
+  ArrowBack
+} from '@mui/icons-material';
+
 import {
   CloudUpload,
   Assignment,
@@ -102,8 +95,8 @@ const handleAnalyze = async () => {
 
     console.log('✅ Analyze response:', response);
 
-if (response && response.analysis) {
-  setResults(response.analysis);
+if (response?.success && response?.data?.analysis) {
+  setResults(response.data.analysis);
 } else {
   throw new Error('Invalid analysis response');
 }
@@ -192,7 +185,7 @@ document.body.removeChild(link);
   const getScoreIcon = (score) => {
     if (score >= 80) return <CheckCircle color="success" />;
     if (score >= 60) return <Warning color="warning" />;
-    return <Error color="error" />;
+    return <ErrorIcon color="error" />;
   };
 
   return (

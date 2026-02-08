@@ -205,7 +205,7 @@ const InterviewCoach = () => {
   const getScoreIcon = (score) => {
     if (score >= 80) return <CheckCircle color="success" />;
     if (score >= 60) return <Warning color="warning" />;
-    return <Error color="error" />;
+    return <ErrorIcon color="error" />;
   };
 
   const renderPracticeTab = () => (
