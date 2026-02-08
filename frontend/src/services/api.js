@@ -7,12 +7,10 @@ const API_BASE_URL =
 
 // Create axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true
 });
+
 
 // Request interceptor
 api.interceptors.request.use(
