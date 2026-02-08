@@ -220,13 +220,9 @@ export const validateRequest = (schema) => {
 // CORS middleware
 export const corsMiddleware = (req, res, next) => {
   const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:5173', // Vite default port
-    process.env.CLIENT_URL,
-    process.env.FRONTEND_URL,
-    process.env.APP_URL
-  ].filter(Boolean);
+  'http://localhost:5173',
+  'https://ai-career-copilot-frontend.onrender.com'
+];
 
   const origin = req.headers.origin;
   
