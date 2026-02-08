@@ -72,7 +72,7 @@ const ATSScorer = () => {
     multiple: false
   });
 
-  const handleAnalyze = async () => {
+const handleAnalyze = async () => {
   if (!uploadedFile) {
     setError('Please upload a resume file');
     return;
@@ -85,6 +85,7 @@ const ATSScorer = () => {
   try {
     const formData = new FormData();
     formData.append('resume', uploadedFile);
+
     if (jobDescription) {
       formData.append('jobDescription', jobDescription);
     }
@@ -93,49 +94,31 @@ const ATSScorer = () => {
       '/resumes/analyze-upload',
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       }
     );
 
     console.log('✅ Analyze response:', response.data);
 
-    if (response.data.success) {
+    if (response.data && response.data.success) {
       setResults(response.data.data.analysis);
     } else {
-      throw new Error(response.data.message || 'Analysis failed');
+      throw new Error(response.data?.message || 'Analysis failed');
     }
 
   } catch (err) {
     console.error('❌ Analysis error:', err);
-    setError(err.response?.data?.message || err.message || 'Failed to analyze resume');
+    setError(
+      err.response?.data?.message ||
+      err.message ||
+      'Failed to analyze resume'
+    );
   } finally {
     setAnalyzing(false);
   }
 };
-
-console.log('✅ Analysis complete:', response.data);
-
-if (response.data.success && response.data.data.analysis) {
-  setResults(response.data.data.analysis);
-} else {
-  throw new Error('Invalid response format');
-}
-
-      console.log('✅ Analysis complete:', data);
-
-      if (data.success && data.data.analysis) {
-        setResults(data.data.analysis);
-      } else {
-        throw new window.Error('Invalid response format');
-      }
-
-    } catch (err) {
-      console.error('Analysis error:', err);
-      setError(`Failed to analyze resume: ${err.message}`);
-    } finally {
-      setAnalyzing(false);
-    }
-  };
 
   const handleGenerateOptimizedPDF = async () => {
     if (!uploadedFile) {
