@@ -1,5 +1,25 @@
 import React, { useState, useCallback } from 'react';
 import api from '../../services/api';
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Chip,
+  LinearProgress,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Alert,
+  Grid,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  TextField
+} from '@mui/material';
 
 import {
   CloudUpload,
@@ -11,7 +31,6 @@ import {
   TrendingDown,
   KeyboardArrowDown,
   Search,
-  Box,
   FilePresent,
   Analytics,
   ArrowBack
