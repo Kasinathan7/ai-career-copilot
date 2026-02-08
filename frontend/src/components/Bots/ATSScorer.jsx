@@ -91,7 +91,7 @@ const handleAnalyze = async () => {
     }
 
     const response = await api.post(
-      '/resumes/analyze-upload',
+      '/resumes/analyze',
       formData,
       {
         headers: {
