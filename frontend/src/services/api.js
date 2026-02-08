@@ -7,7 +7,10 @@ const API_BASE_URL =
 
 // Create axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL:
+    (import.meta.env.VITE_API_URL ||
+      'https://ai-career-copilot-backend-heas.onrender.com') +
+    '/api/v1',
   withCredentials: true
 });
 
@@ -35,9 +38,10 @@ api.interceptors.response.use(
     const message = error.response?.data?.message || error.response?.data?.error || error.message;
 
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    } else if (error.response?.status >= 500) {
+  localStorage.removeItem('token');
+  console.warn('Unauthorized – token removed');
+}
+ else if (error.response?.status >= 500) {
       toast.error('Server error. Please try again later.');
     } else {
       toast.error(message);
