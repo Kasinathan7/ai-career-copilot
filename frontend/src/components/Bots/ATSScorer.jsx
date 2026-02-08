@@ -11,6 +11,7 @@ import {
   TrendingDown,
   KeyboardArrowDown,
   Search,
+  Box,
   FilePresent,
   Analytics,
   ArrowBack
