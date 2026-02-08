@@ -1,5 +1,7 @@
 // file: frontend/src/components/Bots/CodingPracticeBot.jsx
 import React, { useEffect, useState } from 'react';
+import api from '../../services/api';
+
 import {
   Box,
   Typography,
@@ -14,10 +16,6 @@ import {
 import axios from 'axios';
 import { useBotContext } from '../BotRouter';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5002/api/v1'
-});
-
 const CodingPracticeBot = () => {
   const { goToMain } = useBotContext();
 
@@ -28,30 +26,51 @@ const CodingPracticeBot = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-  api.get('/coding/problems').then((res) => {
-    const list = res.data.data || [];
-    setProblems(list);
+useEffect(() => {
+  const loadProblems = async () => {
+    try {
+      const res = await api.get('/coding/problems');
 
-    // ✅ Auto-select first problem as default
-    if (list.length > 0) {
+      console.log('CODING PROBLEMS RAW:', res.data);
+
+      // ✅ Backend returns array directly
+      if (!Array.isArray(res.data)) {
+        throw new Error('Coding problems response is not an array');
+      }
+
+      const list = res.data;
+
+      setProblems(list);
+
+      if (list.length === 0) return;
+
       const first = list[0];
+
       setProblem(first);
       setLanguage('javascript');
-      setCode(first.starterCode.javascript);
+      setCode(first.starterCode?.javascript || '// No starter code');
       setResult(null);
+    } catch (err) {
+      console.error('❌ Failed to load coding problems:', err);
     }
-  });
+  };
+
+  loadProblems();
 }, []);
 
 
-  const selectProblem = (id) => {
-    const p = problems.find((x) => x._id === id);
-    setProblem(p);
-    setLanguage('javascript');
-    setCode(p.starterCode.javascript);
-    setResult(null);
-  };
+
+
+const selectProblem = (id) => {
+  const p = problems.find((x) => x._id === id);
+  if (!p) return;
+
+  setProblem(p);
+  setLanguage('javascript');
+  setCode(p.starterCode?.javascript || '// No starter code');
+  setResult(null);
+};
+
 
   const runCode = async () => {
     setLoading(true);
@@ -60,7 +79,12 @@ const CodingPracticeBot = () => {
       language,
       code
     });
-    setResult(res.data.data);
+    if (res.data?.data) {
+  setResult(res.data.data);
+} else {
+  setResult(res.data);
+}
+
     setLoading(false);
   };
 
@@ -74,12 +98,23 @@ const CodingPracticeBot = () => {
       </Paper>
 
       <Box sx={{ p: 2, flex: 1, overflow: 'auto' }}>
-        <Select fullWidth value={problem?._id || ''} onChange={(e) => selectProblem(e.target.value)}>
-          
-          {problems.map((p) => (
-            <MenuItem key={p._id} value={p._id}>{p.title}</MenuItem>
-          ))}
-        </Select>
+       <Select
+  fullWidth
+  value={problem?._id ?? ''}
+  displayEmpty
+  onChange={(e) => selectProblem(e.target.value)}
+>
+  <MenuItem value="" disabled>
+    Select a problem
+  </MenuItem>
+
+  {problems.map((p) => (
+    <MenuItem key={p._id} value={p._id}>
+      {p.title}
+    </MenuItem>
+  ))}
+</Select>
+
 
         {problem && (
           <>

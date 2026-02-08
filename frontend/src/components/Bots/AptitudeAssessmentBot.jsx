@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import api from '../../services/api';
+
 import {
   Box,
   Typography,
@@ -12,7 +14,7 @@ import {
 } from '@mui/material';
 import { useBotContext } from '../BotRouter';
 
-const API_BASE = 'http://localhost:5002/api/v1';
+
 
 const AptitudeAssessmentBot = () => {
   const { goToMain } = useBotContext();
@@ -30,86 +32,92 @@ const AptitudeAssessmentBot = () => {
     startSession();
   }, []);
 
-  const startSession = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+ const startSession = async () => {
+  try {
+    setLoading(true);
+    setError(null);
 
-      const response = await axios.post(`${API_BASE}/aptitude/start`);
+    // ⚠️ response IS ALREADY the JSON body
+    const data = await api.post('/aptitude/start');
 
-      console.log('START SESSION RAW RESPONSE:', response.data);
+    console.log('START SESSION RAW RESPONSE:', data);
 
-      const payload = response.data;
-      if (!payload || !payload.sessionId) {
-        throw new Error('Invalid session response');
-      }
-
-      setSessionId(payload.sessionId);
-    } catch (err) {
-      console.error('❌ startSession failed:', err);
-      setError('Failed to start assessment session.');
-    } finally {
-      setLoading(false);
+    if (!data?.sessionId) {
+      throw new Error('Session ID not returned by backend');
     }
-  };
+
+    setSessionId(data.sessionId);
+  } catch (err) {
+    console.error('❌ startSession failed:', err);
+    setError('Failed to start assessment session.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const loadNext = async (sid) => {
-    try {
-      setLoading(true);
-      setError(null);
+  try {
+    setLoading(true);
+    setError(null);
 
-      const res = await axios.get(`${API_BASE}/aptitude/next/${sid}`);
-      const payload = res.data;
+    // ⚠️ res IS ALREADY response.data
+    const res = await api.get(`/aptitude/next/${sid}`);
 
-      if (!payload || !payload.data) {
-        throw new Error('Invalid question response');
-      }
+    console.log('NEXT QUESTION RAW RESPONSE:', res);
 
-      setQuestion(payload.data);
-      setSelected(null);
-      setFeedback(null);
-    } catch (err) {
-      console.error('❌ loadNext failed:', err);
-      setError('Failed to load next question.');
-    } finally {
-      setLoading(false);
+    if (!res?.data) {
+      throw new Error('Invalid question response');
     }
-  };
+
+    setQuestion(res.data);
+    setSelected(null);
+    setFeedback(null);
+  } catch (err) {
+    console.error('❌ loadNext failed:', err);
+    setError('Failed to load next question.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     if (sessionId) loadNext(sessionId);
   }, [sessionId]);
 
   const submit = async () => {
-    try {
-      const res = await axios.post(`${API_BASE}/aptitude/answer`, {
-        sessionId,
-        questionId: question.questionId,
-        selectedIndex: selected
-      });
+  try {
+    setLoading(true);
+    setError(null);
 
-      const result = res.data;
+    // ⚠️ res IS ALREADY response.data
+    const res = await api.post('/aptitude/answer', {
+      sessionId,
+      questionId: question.questionId,
+      selectedIndex: selected
+    });
 
-      if (
-        typeof result.correct !== 'boolean' ||
-        typeof result.score !== 'number' ||
-        typeof result.total !== 'number'
-      ) {
-        throw new Error('Invalid submit response');
-      }
+    console.log('SUBMIT RAW RESPONSE:', res);
 
-      setFeedback(result);
-
-      if (result.total >= 10) {
-        const endRes = await axios.post(`${API_BASE}/aptitude/end/${sessionId}`);
-        setSummary(endRes.data.data);
-        setFinished(true);
-      }
-    } catch (err) {
-      console.error('❌ submit failed:', err);
-      setError('Failed to submit answer.');
+    if (typeof res.correct !== 'boolean') {
+      throw new Error('Invalid submit response');
     }
-  };
+
+    setFeedback(res);
+
+    // finish after 10 questions
+    if (res.total >= 10) {
+      const endRes = await api.post(`/aptitude/end/${sessionId}`);
+      setSummary(endRes.data);
+      setFinished(true);
+    }
+  } catch (err) {
+    console.error('❌ submit failed:', err);
+    setError('Failed to submit answer.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (loading && !question && !finished) {
     return (

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import api from '../../services/api';
 import {
   Box,
   Paper,
@@ -90,10 +91,7 @@ const ATSScorer = () => {
 
       console.log('🔍 Analyzing resume with AI...');
 
-      const response = await fetch('http://localhost:5002/api/v1/resumes/analyze', {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await api.post('/resumes/analyze',formData);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Failed to analyze resume' }));
@@ -136,10 +134,9 @@ const ATSScorer = () => {
 
       console.log('🚀 Generating ATS-optimized PDF...');
 
-      const response = await fetch('http://localhost:5002/api/v1/resumes/generate-ats-pdf', {
-        method: 'POST',
-        body: formData,
-      });
+      const response =await api.post('/resumes/generate-ats-pdf', formData, {
+  responseType: 'blob'
+});
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Failed to generate PDF' }));

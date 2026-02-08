@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import api from '../../services/api';
 import {
   Box,
   Paper,
@@ -77,7 +78,7 @@ const ResumeBuilder_AI = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5002/api/v1/resumes/generate-from-text', formData);
+      const response = await api.post('/resumes/generate-from-text', formData);
       
       if (response.data.success) {
         setGeneratedResume(response.data.data.resume);
@@ -97,7 +98,7 @@ const ResumeBuilder_AI = () => {
     if (!generatedResume) return;
 
     try {
-      const response = await axios.post('http://localhost:5002/api/v1/resumes/generate-pdf', 
+      const response = await api.post('/resumes/generate-pdf',
         { resumeData: generatedResume },
         { responseType: 'blob' }
       );

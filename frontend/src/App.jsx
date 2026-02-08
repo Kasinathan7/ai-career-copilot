@@ -44,7 +44,7 @@ function App() {
           },
         }}
       />
-      <Router basename="/ai_resume">
+      <Router>
         <AppBar
           position="sticky"
           color="default"

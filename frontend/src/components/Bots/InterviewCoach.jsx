@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import api from '../../services/api';
 import {
   Box,
   Paper,
@@ -111,7 +112,7 @@ const InterviewCoach = () => {
   const generateQuestion = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5002/api/v1/interview/generate-question', {
+      const response = await api.post('/interview/generate-question',  {
         type: selectedType,
         level: selectedLevel,
         role: targetRole || undefined,
@@ -152,7 +153,7 @@ const InterviewCoach = () => {
     const duration = Math.floor((Date.now() - answerStartTime.current) / 1000);
 
     try {
-      const response = await axios.post('http://localhost:5002/api/v1/interview/analyze-answer', {
+      const response = await api.post('/interview/analyze-answer', {
         question: currentQuestion,
         answer: userAnswer,
         type: selectedType,

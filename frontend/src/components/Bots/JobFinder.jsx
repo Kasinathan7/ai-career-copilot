@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../api/base';
+  
 import {
   Box,
   Paper,
@@ -157,16 +159,20 @@ const JobFinder = () => {
     
     try {
       // Call Gemini AI job search endpoint
-      const response = await axios.post('http://localhost:5002/api/v1/external-jobs/search-ai', {
-        keywords: searchCriteria.keywords,
-        location: searchCriteria.location,
-        jobType: searchCriteria.jobType,
-        experienceLevel: searchCriteria.experience,
-        remote: searchCriteria.remote,
-        salaryMin: searchCriteria.salaryMin,
-        salaryMax: searchCriteria.salaryMax,
-        limit: 10
-      });
+      const response = await axios.post(
+  `${API_BASE_URL}/external-jobs/search-ai`,
+  {
+    keywords: searchCriteria.keywords,
+    location: searchCriteria.location,
+    jobType: searchCriteria.jobType,
+    experienceLevel: searchCriteria.experience,
+    remote: searchCriteria.remote,
+    salaryMin: searchCriteria.salaryMin,
+    salaryMax: searchCriteria.salaryMax,
+    limit: 10
+  }
+);
+
 
       if (response.data.success) {
         const jobs = response.data.data.jobs.map((job, index) => ({
