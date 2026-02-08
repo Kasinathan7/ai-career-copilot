@@ -1,19 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import api from '../../services/api';
-import {
-  CloudUpload,
-  Assignment,
-  CheckCircle,
-  Warning,
-  Error as ErrorIcon,
-  TrendingUp,
-  TrendingDown,
-  KeyboardArrowDown,
-  Search,
-  FilePresent,
-  Analytics,
-  ArrowBack
-} from '@mui/icons-material';
 
 import {
   CloudUpload,
@@ -409,7 +395,8 @@ document.body.removeChild(link);
                             <ListItemIcon>
                               {keyword.found ? 
                                 <CheckCircle color="success" fontSize="small" /> : 
-                                <Error color="error" fontSize="small" />
+                                <ErrorIcon color="error" fontSize="small" />
+
                               }
                             </ListItemIcon>
                             <ListItemText
