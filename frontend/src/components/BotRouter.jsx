@@ -40,9 +40,9 @@ const BotRouter = () => {
 
   const modules = [
     { key: 'ats-scorer', label: 'ATS Scorer', icon: <Analytics fontSize="small" /> },
-    { key: 'resume-builder', label: 'Resume Builder', icon: <Edit fontSize="small" /> },
+  
     { key: 'interview-coach', label: 'Interview Coach', icon: <Psychology fontSize="small" /> },
-    { key: 'live-interview', label: 'Live Interview', icon: <Videocam fontSize="small" /> },
+    // { key: 'live-interview', label: 'Live Interview', icon: <Videocam fontSize="small" /> },
     { key: 'coding-practice', label: 'Coding Practice', icon: <Code fontSize="small" /> },
     { key: 'aptitude-assessment', label: 'Aptitude Test', icon: <Psychology fontSize="small" /> },
     { key: 'job-finder', label: 'Job Finder', icon: <Search fontSize="small" /> },

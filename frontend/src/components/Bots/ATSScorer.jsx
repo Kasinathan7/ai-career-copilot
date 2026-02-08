@@ -100,13 +100,14 @@ const handleAnalyze = async () => {
       }
     );
 
-    console.log('✅ Analyze response:', response.data);
+    console.log('✅ Analyze response:', response);
 
-    if (response.data && response.data.success) {
-      setResults(response.data.data.analysis);
-    } else {
-      throw new Error(response.data?.message || 'Analysis failed');
-    }
+if (response && response.analysis) {
+  setResults(response.analysis);
+} else {
+  throw new Error('Invalid analysis response');
+}
+
 
   } catch (err) {
     console.error('❌ Analysis error:', err);
