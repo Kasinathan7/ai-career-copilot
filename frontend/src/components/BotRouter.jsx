@@ -83,9 +83,8 @@ const BotRouter = () => {
         <Box sx={{ flex: 1, minHeight: 0 }}>
           {activeBot === 'main' && <ChatInterface />}
           {activeBot === 'ats-scorer' && <ATSScorer />}
-          {activeBot === 'resume-builder' && <ResumeBuilder />}
           {activeBot === 'interview-coach' && <InterviewCoach />}
-          {activeBot === 'live-interview' && <LiveInterviewBot />}
+          {/* {activeBot === 'live-interview' && <LiveInterviewBot />} */}
           {activeBot === 'coding-practice' && <CodingPracticeBot />}
           {activeBot === 'aptitude-assessment' && <AptitudeAssessmentBot />}
           {activeBot === 'job-finder' && <JobFinder />}

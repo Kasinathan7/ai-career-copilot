@@ -142,10 +142,7 @@ if (response.data.success && response.data.data.analysis) {
 
       console.log('🚀 Generating ATS-optimized PDF...');
 
-      const response =await api.post('/resumes/generate-ats-pdf', formData, {
-  responseType: 'blob'
-});
-
+      
       const response = await api.post(
   '/resumes/generate-ats-pdf',
   formData,
@@ -305,17 +302,7 @@ document.body.removeChild(link);
                 />
 
                 <Box sx={{ mt: 2, textAlign: 'center', display: 'flex', gap: 2, justifyContent: 'center' }}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={handleGenerateOptimizedPDF}
-                    disabled={!uploadedFile || generatingPDF}
-                    startIcon={generatingPDF ? <CircularProgress size={20} /> : <FilePresent />}
-                    sx={{ px: 4 }}
-                    color="success"
-                  >
-                    {generatingPDF ? 'Generating PDF...' : 'Generate ATS-Optimized PDF'}
-                  </Button>
+                  
                   
                   <Button
                     variant="outlined"
