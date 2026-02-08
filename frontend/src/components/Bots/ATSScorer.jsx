@@ -89,16 +89,24 @@ const ATSScorer = () => {
         formData.append('jobDescription', jobDescription);
       }
 
-      console.log('🔍 Analyzing resume with AI...');
+      const response = await api.post(
+  '/resumes/analyze-upload',
+  formData,
+  {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+);
 
-      const response = await api.post('/resumes/analyze',formData);
+console.log('✅ Analysis complete:', response.data);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to analyze resume' }));
-        throw new window.Error(errorData.message || 'Failed to analyze resume');
-      }
+if (response.data.success && response.data.data.analysis) {
+  setResults(response.data.data.analysis);
+} else {
+  throw new Error('Invalid response format');
+}
 
-      const data = await response.json();
       console.log('✅ Analysis complete:', data);
 
       if (data.success && data.data.analysis) {
@@ -138,24 +146,31 @@ const ATSScorer = () => {
   responseType: 'blob'
 });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to generate PDF' }));
-        throw new window.Error(errorData.message || 'Failed to generate PDF');
-      }
+      const response = await api.post(
+  '/resumes/generate-ats-pdf',
+  formData,
+  {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    responseType: 'blob'
+  }
+);
 
-      // Get the PDF blob
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      
-      setDownloadUrl(url);
-      
-      // Auto-download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ats-optimized-resume-${Date.now()}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+// Axios gives blob directly
+const blob = response.data;
+const url = window.URL.createObjectURL(blob);
+
+setDownloadUrl(url);
+
+// Auto-download
+const link = document.createElement('a');
+link.href = url;
+link.download = `ats-optimized-resume-${Date.now()}.pdf`;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+
       
       console.log('✅ ATS-optimized PDF downloaded!');
       
