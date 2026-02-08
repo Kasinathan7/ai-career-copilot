@@ -7,12 +7,10 @@ const API_BASE_URL =
 
 // Create axios instance
 const api = axios.create({
-  baseURL:
-    (import.meta.env.VITE_API_URL ||
-      'https://ai-career-copilot-backend-heas.onrender.com') +
-    '/api/v1',
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true
 });
+
 
 
 // Request interceptor
