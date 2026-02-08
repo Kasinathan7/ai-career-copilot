@@ -73,31 +73,45 @@ const ATSScorer = () => {
   });
 
   const handleAnalyze = async () => {
-    if (!uploadedFile) {
-      setError('Please upload a resume file');
-      return;
-    }
-
-    setAnalyzing(true);
-    setError('');
-    setResults(null);
-
-    try {
-      const formData = new FormData();
-      formData.append('resume', uploadedFile);
-      if (jobDescription) {
-        formData.append('jobDescription', jobDescription);
-      }
-
-      const response = await api.post(
-  '/resumes/analyze-upload',
-  formData,
-  {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+  if (!uploadedFile) {
+    setError('Please upload a resume file');
+    return;
   }
-);
+
+  setAnalyzing(true);
+  setError('');
+  setResults(null);
+
+  try {
+    const formData = new FormData();
+    formData.append('resume', uploadedFile);
+    if (jobDescription) {
+      formData.append('jobDescription', jobDescription);
+    }
+
+    const response = await api.post(
+      '/resumes/analyze-upload',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }
+    );
+
+    console.log('✅ Analyze response:', response.data);
+
+    if (response.data.success) {
+      setResults(response.data.data.analysis);
+    } else {
+      throw new Error(response.data.message || 'Analysis failed');
+    }
+
+  } catch (err) {
+    console.error('❌ Analysis error:', err);
+    setError(err.response?.data?.message || err.message || 'Failed to analyze resume');
+  } finally {
+    setAnalyzing(false);
+  }
+};
 
 console.log('✅ Analysis complete:', response.data);
 
@@ -305,13 +319,11 @@ document.body.removeChild(link);
                   
                   
                   <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={handleAnalyze}
-                    disabled={!uploadedFile || analyzing}
-                    startIcon={analyzing ? <CircularProgress size={20} /> : <Search />}
-                    sx={{ px: 4 }}
-                  >
+  type="button"
+  variant="outlined"
+  onClick={handleAnalyze}
+>
+
                     {analyzing ? 'Analyzing...' : 'Analyze Resume'}
                   </Button>
                 </Box>
