@@ -26,15 +26,15 @@ import {
   Assignment,
   CheckCircle,
   Warning,
-  Error,
+  Error as ErrorIcon,
   TrendingUp,
   TrendingDown,
   KeyboardArrowDown,
-  Search,
   FilePresent,
   Analytics,
   ArrowBack
 } from '@mui/icons-material';
+
 import { useDropzone } from 'react-dropzone';
 import { useBotContext } from '../BotRouter';
 
@@ -106,6 +106,7 @@ if (response?.success && response?.data?.analysis) {
 } else {
   throw new Error('Invalid analysis response');
 }
+
 
 
   } catch (err) {
