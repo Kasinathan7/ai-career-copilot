@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 async function listModels() {
   try {
     console.log('🔍 Fetching available Gemini models...\n');
-    
+    /test
     // Try to list models
     const models = await genAI.listModels();
     
